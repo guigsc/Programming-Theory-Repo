@@ -1,6 +1,6 @@
+using Scripts.Enum;
 using System.Collections;
 using System.Collections.Generic;
-using TowerDefensHP;
 using UnityEngine;
 
 public class TargetField : MonoBehaviour
@@ -12,15 +12,15 @@ public class TargetField : MonoBehaviour
 
     [SerializeField] private TargetFieldPosition targetFieldPosition;
 
-    private List<GameObject> enemiesOnTarget;
-    public List<GameObject> EnemiesOnTarget => enemiesOnTarget;
+    private List<Enemy> enemiesOnTarget;
+    public List<Enemy> EnemiesOnTarget => enemiesOnTarget; 
 
     public TargetFieldPosition TargetFieldPosition => targetFieldPosition;
 
     private void Start()
     {
         targetFieldRenderer = GetComponent<MeshRenderer>();
-        enemiesOnTarget = new List<GameObject>();
+        enemiesOnTarget = new List<Enemy>();
     }
     public void OnSensorTrigger(Sensor sensor)
     {
@@ -34,29 +34,29 @@ public class TargetField : MonoBehaviour
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnTriggerEnter(Collider other)
     {
-        if (collision.gameObject.CompareTag("Enemy"))
+        if (other.CompareTag("Enemy"))
         {
-            var enemy = collision.gameObject.GetComponent<Enemy>();
+            var enemy = other.GetComponent<Enemy>();
             enemy.onDeath.AddListener(OnEnemyDeath);
-            enemiesOnTarget.Add(collision.gameObject);
+            enemiesOnTarget.Add(enemy);
         }
     }
 
-    private void OnCollisionExit(Collision collision)
+    private void OnTriggerExit(Collider other)
     {
-        if (collision.gameObject.CompareTag("Enemy"))
+        if (other.CompareTag("Enemy"))
         {
-            enemiesOnTarget.Remove(collision.gameObject);
+            enemiesOnTarget.Remove(other.GetComponent<Enemy>());
         }
     }
 
-    private void OnEnemyDeath(GameObject enemyGO)
+    private void OnEnemyDeath(Enemy deadEnemy)
     {
-        if (enemiesOnTarget.Find(enemy => enemy == enemyGO))
+        if (enemiesOnTarget.Find(enemy => enemy == deadEnemy))
         {
-            enemiesOnTarget.Remove(enemyGO);
+            enemiesOnTarget.Remove(deadEnemy);
         }
     }
 }

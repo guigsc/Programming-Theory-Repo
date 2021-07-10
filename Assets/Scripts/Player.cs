@@ -4,31 +4,30 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    private Rigidbody playerRb;
-    
     [SerializeField] private float speed;
     [SerializeField] private float jumpForce;
 
+    private Rigidbody playerRb;
+    private bool isGrounded;
+
     private float horizontalMovement;
     private bool hasPressedJump;
-    
-    public bool IsGrounded;
 
-    [SerializeField] private bool canAttack;
+    private bool canAttack;
     private bool hasPressedAttack;
-
     private TargetField targetField;
+
 
     void Start()
     {
         playerRb = GetComponent<Rigidbody>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         horizontalMovement = Input.GetAxisRaw("Horizontal");
-        if (Input.GetButtonDown("Jump") && IsGrounded)
+
+        if (Input.GetButtonDown("Jump") && isGrounded)
         {
             hasPressedJump = true;
         }
@@ -41,33 +40,44 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-        playerRb.velocity = new Vector3(horizontalMovement * speed, playerRb.velocity.y, playerRb.velocity.z);
+        Move();
 
         if (hasPressedJump)
-        {
-            playerRb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            IsGrounded = false;
-            hasPressedJump = false;
-        }
+            Jump();
 
         if (hasPressedAttack)
-        {
-            hasPressedAttack = false;
             Attack();
-        }
+    }
+
+    private void Move()
+    {
+        playerRb.velocity = new Vector3(horizontalMovement * speed, playerRb.velocity.y, playerRb.velocity.z);
+    }
+
+    private void Jump()
+    {
+        playerRb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        isGrounded = false;
+        hasPressedJump = false;
     }
 
     private void Attack()
     {
-        foreach (var enemyGO in targetField.EnemiesOnTarget.ToList())
+        foreach (var enemy in targetField.EnemiesOnTarget.ToList())
         {
-            enemyGO.GetComponent<Enemy>().DealDamage(1);
+            enemy.DealDamage(1);
         }
+        hasPressedAttack = false;
     }
 
     public void OnSensorTrigger(Sensor sensor)
     {
-        this.canAttack = sensor.IsActive;
-        this.targetField = sensor.TargetField;
+        canAttack = sensor.IsActive;
+        targetField = sensor.TargetField;
+    }
+
+    public void OnGroundCollision()
+    {
+        isGrounded = true;
     }
 }

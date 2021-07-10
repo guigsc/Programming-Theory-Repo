@@ -1,22 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class GroundChecker : MonoBehaviour
 {
-    Player player;
+    private UnityEvent onGroundCollision = new UnityEvent();
     
-    void Start()
+    Player player;
+
+    private void Start()
     {
         player = GetComponentInParent<Player>();
+        onGroundCollision.AddListener(player.OnGroundCollision);
     }
 
-    // Update is called once per frame
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Floor"))
         {
-            player.IsGrounded = true;
+            if (onGroundCollision != null)
+                onGroundCollision.Invoke();
         }
     }
 }

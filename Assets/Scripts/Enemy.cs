@@ -16,11 +16,10 @@ public class Enemy : MonoBehaviour
     private bool hasReachedPosition;
     private Vector3 targetPosition;
 
-    public UnityEvent<GameObject> onDeath;
+    public UnityEvent<Enemy> onDeath = new UnityEvent<Enemy>();
 
     private void Start()
     {
-        onDeath = new UnityEvent<GameObject>();
         targetPosition = GetTargetPosition();
     }
 
@@ -28,11 +27,21 @@ public class Enemy : MonoBehaviour
     {
         if (!hasReachedPosition)
         {
-            GoToPosition(targetPosition);
+            Move(targetPosition);
         }
         else
         {
             Attack();
+        }
+    }
+
+    private void Move(Vector3 position)
+    {
+        transform.Translate(Vector3.right * speed * Time.deltaTime);
+        if (transform.position.x >= position.x)
+        {
+            speed = 0;
+            hasReachedPosition = true;
         }
     }
 
@@ -42,16 +51,6 @@ public class Enemy : MonoBehaviour
         {
             Tower.Instance.DealDamage(attackDamage);
             nextAttack = Time.time + attackRate;
-        }
-    }
-
-    private void GoToPosition(Vector3 position)
-    {
-        transform.Translate(Vector3.right * speed * Time.deltaTime);
-        if (transform.position.x >= position.x)
-        {
-            speed = 0;
-            hasReachedPosition = true;
         }
     }
 
@@ -81,7 +80,7 @@ public class Enemy : MonoBehaviour
     private void Die()
     {
         if (onDeath != null)
-            onDeath.Invoke(gameObject);
+            onDeath.Invoke(this);
 
         Destroy(gameObject, 0.2f);
     }
