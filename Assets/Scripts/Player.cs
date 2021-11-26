@@ -4,37 +4,37 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField] private float speed;
-    [SerializeField] private float jumpForce;
+    [SerializeField] private float _speed;
+    [SerializeField] private float _jumpForce;
+    [SerializeField] private int _attackDamage;
 
-    private Rigidbody playerRb;
-    private bool isGrounded;
+    private Rigidbody _playerRb;
+    private bool _isGrounded;
 
-    private float horizontalMovement;
-    private bool hasPressedJump;
+    private float _horizontalMovement;
+    private bool _hasPressedJump;
 
-    private bool canAttack;
-    private bool hasPressedAttack;
-    private TargetField targetField;
+    private bool _canAttack;
+    private bool _hasPressedAttack;
+    private TargetField _targetField;
 
-
-    void Start()
+    void Awake()
     {
-        playerRb = GetComponent<Rigidbody>();
+        _playerRb = GetComponent<Rigidbody>();
     }
 
     void Update()
     {
-        horizontalMovement = Input.GetAxisRaw("Horizontal");
+        _horizontalMovement = Input.GetAxisRaw("Horizontal");
 
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        if (Input.GetButtonDown("Jump") && _isGrounded)
         {
-            hasPressedJump = true;
+            _hasPressedJump = true;
         }
 
-        if (Input.GetButtonDown("Fire1") && canAttack)
+        if (Input.GetButtonDown("Fire1") && _canAttack)
         {
-            hasPressedAttack = true;
+            _hasPressedAttack = true;
         }
     }
 
@@ -42,42 +42,42 @@ public class Player : MonoBehaviour
     {
         Move();
 
-        if (hasPressedJump)
+        if (_hasPressedJump)
             Jump();
 
-        if (hasPressedAttack)
+        if (_hasPressedAttack)
             Attack();
     }
 
     private void Move()
     {
-        playerRb.velocity = new Vector3(horizontalMovement * speed, playerRb.velocity.y, playerRb.velocity.z);
+        _playerRb.velocity = new Vector3(_horizontalMovement * _speed, _playerRb.velocity.y, _playerRb.velocity.z);
     }
 
     private void Jump()
     {
-        playerRb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-        isGrounded = false;
-        hasPressedJump = false;
+        _playerRb.AddForce(Vector3.up * _jumpForce, ForceMode.Impulse);
+        _isGrounded = false;
+        _hasPressedJump = false;
     }
 
     private void Attack()
     {
-        foreach (var enemy in targetField.EnemiesOnTarget.ToList())
+        foreach (var enemy in _targetField.EnemiesOnTarget.ToList())
         {
-            enemy.DealDamage(1);
+            enemy.TakeDamage(_attackDamage);
         }
-        hasPressedAttack = false;
+        _hasPressedAttack = false;
     }
 
     public void OnSensorTrigger(Sensor sensor)
     {
-        canAttack = sensor.IsActive;
-        targetField = sensor.TargetField;
+        _canAttack = sensor.IsActive;
+        _targetField = sensor.TargetField;
     }
 
     public void OnGroundCollision()
     {
-        isGrounded = true;
+        _isGrounded = true;
     }
 }

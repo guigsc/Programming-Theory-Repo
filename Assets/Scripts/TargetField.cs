@@ -1,62 +1,62 @@
+using Assets.Scripts.Enums;
 using Scripts.Enum;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class TargetField : MonoBehaviour
 {
-    MeshRenderer targetFieldRenderer;
+    [SerializeField] private Material _targetFieldMaterial;
+    [SerializeField] private Material _defaultMaterial;
+    [SerializeField] private TargetFieldPosition _targetFieldPosition;
+    
+    private MeshRenderer _targetFieldRenderer;
+    
+    private List<Enemy> _enemiesOnTarget;
 
-    [SerializeField] Material targetFieldMaterial;
-    [SerializeField] Material defaultMaterial;
+    public List<Enemy> EnemiesOnTarget => _enemiesOnTarget;
+    public TargetFieldPosition TargetFieldPosition => _targetFieldPosition;
 
-    [SerializeField] private TargetFieldPosition targetFieldPosition;
-
-    private List<Enemy> enemiesOnTarget;
-    public List<Enemy> EnemiesOnTarget => enemiesOnTarget; 
-
-    public TargetFieldPosition TargetFieldPosition => targetFieldPosition;
-
-    private void Start()
+    private void Awake()
     {
-        targetFieldRenderer = GetComponent<MeshRenderer>();
-        enemiesOnTarget = new List<Enemy>();
-    }
-    public void OnSensorTrigger(Sensor sensor)
-    {
-        if (sensor.IsActive)
-        {
-            targetFieldRenderer.material = targetFieldMaterial;
-        }
-        else
-        {
-            targetFieldRenderer.material = defaultMaterial;
-        }
+        _targetFieldRenderer = GetComponent<MeshRenderer>();
+        _enemiesOnTarget = new List<Enemy>();
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Enemy"))
+        if (other.CompareTag(Tag.Enemy.ToString()))
         {
             var enemy = other.GetComponent<Enemy>();
             enemy.onDeath.AddListener(OnEnemyDeath);
-            enemiesOnTarget.Add(enemy);
+            _enemiesOnTarget.Add(enemy);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Enemy"))
+        if (other.CompareTag(Tag.Enemy.ToString()))
         {
-            enemiesOnTarget.Remove(other.GetComponent<Enemy>());
+            _enemiesOnTarget.Remove(other.GetComponent<Enemy>());
         }
     }
 
     private void OnEnemyDeath(Enemy deadEnemy)
     {
-        if (enemiesOnTarget.Find(enemy => enemy == deadEnemy))
+        if (_enemiesOnTarget.Find(enemy => enemy == deadEnemy))
         {
-            enemiesOnTarget.Remove(deadEnemy);
+            _enemiesOnTarget.Remove(deadEnemy);
+        }
+    }
+
+    public void OnSensorTrigger(Sensor sensor)
+    {
+        if (sensor.IsActive)
+        {
+            _targetFieldRenderer.material = _targetFieldMaterial;
+        }
+        else
+        {
+            _targetFieldRenderer.material = _defaultMaterial;
         }
     }
 }

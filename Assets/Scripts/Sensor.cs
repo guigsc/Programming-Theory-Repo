@@ -1,59 +1,60 @@
-using System;
+using Assets.Scripts.Enums;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class Sensor : MonoBehaviour
 {
-    private UnityEvent<Sensor> onSensorTrigger;
-    
-    public bool IsActive { get; private set; }
+    [SerializeField] TargetField _targetField;
 
-    [SerializeField] TargetField m_targetField;
-    public TargetField TargetField => m_targetField;
+    private UnityEvent<Sensor> _onSensorTrigger;
+    private bool _isActive;
 
-    private void Start()
+    public bool IsActive => _isActive;
+    public TargetField TargetField => _targetField;
+
+    private void Awake()
     {
+        _onSensorTrigger = new UnityEvent<Sensor>();
+
         SetTargetField();
         RegisterPlayers();
     }
 
     private void SetTargetField()
     {
-        if (m_targetField != null)
+        if (_targetField != null)
         {
-            onSensorTrigger = new UnityEvent<Sensor>();
-            onSensorTrigger.AddListener(m_targetField.OnSensorTrigger);
+            _onSensorTrigger.AddListener(_targetField.OnSensorTrigger);
         }
     }
 
     private void RegisterPlayers()
     {
-        var players = FindObjectsOfType<Player>();
-        foreach (var player in players)
+        foreach (var player in FindObjectsOfType<Player>())
         {
-            onSensorTrigger.AddListener(player.OnSensorTrigger);
+            _onSensorTrigger.AddListener(player.OnSensorTrigger);
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag(Tag.Player.ToString()))
         {
-            IsActive = true;
+            _isActive = true;
 
-            if (onSensorTrigger != null)
-                onSensorTrigger.Invoke(this);
+            if (_onSensorTrigger != null)
+                _onSensorTrigger.Invoke(this);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag(Tag.Player.ToString()))
         {
-            IsActive = false;
+            _isActive = false;
 
-            if (onSensorTrigger != null)
-                onSensorTrigger.Invoke(this);
+            if (_onSensorTrigger != null)
+                _onSensorTrigger.Invoke(this);
         }
     }
 }

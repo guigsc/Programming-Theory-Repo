@@ -5,29 +5,31 @@ using UnityEngine.Events;
 
 public class Enemy : MonoBehaviour
 {
-    [SerializeField] TargetFieldPosition targetFieldPosition;
-    [SerializeField] protected float speed;
-    [SerializeField] private float attackRate;
-    [SerializeField] private int attackDamage;
-    [SerializeField] private int health;
+    [SerializeField] TargetFieldPosition _targetFieldPosition;
+    [SerializeField] protected float _speed;
+    [SerializeField] private float _attackRate;
+    [SerializeField] private int _attackDamage;
+    [SerializeField] private int _health;
 
-    private float nextAttack;
+    private float _nextAttack;
 
-    private bool hasReachedPosition;
-    private Vector3 targetPosition;
+    private bool _hasReachedPosition;
+
+    private TargetField _targetField;
+    private Vector3 _targetPosition;
 
     public UnityEvent<Enemy> onDeath = new UnityEvent<Enemy>();
 
     private void Start()
     {
-        targetPosition = GetTargetPosition();
+        GetTargetPosition();
     }
 
     private void Update()
     {
-        if (!hasReachedPosition)
+        if (!_hasReachedPosition)
         {
-            Move(targetPosition);
+            MoveTo(_targetPosition);
         }
         else
         {
@@ -35,43 +37,41 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    private void Move(Vector3 position)
+    private void GetTargetPosition()
     {
-        transform.Translate(Vector3.right * speed * Time.deltaTime);
+        _targetField = FindObjectsOfType<TargetField>()
+            .Where(t => t.transform.position.x < 0 && t.TargetFieldPosition == _targetFieldPosition)
+            .FirstOrDefault(); 
+
+        if (_targetField != null)
+            _targetPosition = _targetField.transform.position;
+        else
+            _targetPosition = Vector3.zero;
+    }
+
+    private void MoveTo(Vector3 position)
+    {
+        transform.Translate(Vector3.right * _speed * Time.deltaTime);
         if (transform.position.x >= position.x)
         {
-            speed = 0;
-            hasReachedPosition = true;
+            _speed = 0;
+            _hasReachedPosition = true;
         }
     }
 
     private void Attack()
     {
-        if (Time.time > nextAttack)
+        if (Time.time > _nextAttack)
         {
-            Tower.Instance.DealDamage(attackDamage);
-            nextAttack = Time.time + attackRate;
+            Castle.Instance.DealDamage(_attackDamage);
+            _nextAttack = Time.time + _attackRate;
         }
     }
 
-    private Vector3 GetTargetPosition()
+    public void TakeDamage(int damage)
     {
-        var targetField = FindObjectsOfType<TargetField>()
-            .Where(t => t.transform.position.x < 0 && t.TargetFieldPosition == targetFieldPosition)
-            .FirstOrDefault();
-        
-        if (targetField != null)
-        {
-            return targetField.transform.position;
-        }
-
-        return Vector3.zero;
-    }
-
-    public void DealDamage(int damage)
-    {
-        health -= damage;
-        if (health <= 0)
+        _health -= damage;
+        if (_health <= 0)
         {
             Die();
         }

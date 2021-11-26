@@ -1,24 +1,25 @@
+using Assets.Scripts.Enums;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class GroundChecker : MonoBehaviour
 {
-    private UnityEvent onGroundCollision = new UnityEvent();
+    private UnityEvent _onGroundCollision = new UnityEvent();
     
-    Player player;
+    private Player _player;
 
     private void Start()
     {
-        player = GetComponentInParent<Player>();
-        onGroundCollision.AddListener(player.OnGroundCollision);
+        _player = GetComponentInParent<Player>();
+        _onGroundCollision.AddListener(_player.OnGroundCollision);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.layer == LayerMask.NameToLayer("Floor"))
+        if (other.gameObject.layer == LayerMask.NameToLayer(Layer.Floor.ToString()))
         {
-            if (onGroundCollision != null)
-                onGroundCollision.Invoke();
+            if (_onGroundCollision != null)
+                _onGroundCollision.Invoke();
         }
     }
 }
